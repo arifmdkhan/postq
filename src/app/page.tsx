@@ -1,69 +1,79 @@
+import { Card } from "@/components/ui/card";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, CalendarDays, FileText, ImageIcon, Layers, Sparkles } from "lucide-react";
+import { Brand } from "@/components/brand";
+import { ThemeSwitch } from "@/components/theme-switch";
+import { buttonVariants } from "@/components/ui/button";
+
+const sampleWeek = [
+  ["Mon", "Coastal notes from the road", "Scheduled", "10:00 AM", "coast"],
+  ["Tue", "In the studio", "Draft", "2:00 PM", "bloom"],
+  ["Wed", "", "", ""],
+  ["Thu", "Light, texture and place", "Scheduled", "11:00 AM", "arch"],
+  ["Fri", "A slower creative week", "Draft", "4:00 PM", "shutters"],
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto max-w-[82rem] px-5 sm:px-10">
+      <header className="flex min-h-20 items-center justify-between gap-4 border-b">
+        <Brand />
+        <Link href="#overview" className="hidden text-sm font-medium hover:underline sm:inline">Overview</Link>
+        <div className="flex items-center gap-3">
+          <ThemeSwitch />
+          <Link href="/dashboard/calendar" className={buttonVariants()}>Open studio <ArrowRight /></Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+      <section id="overview" className="relative isolate overflow-hidden py-12 sm:py-20">
+        <div aria-hidden className="pointer-events-none absolute top-52 -right-5 -z-10 hidden aspect-[4/3] w-[58%] overflow-hidden rounded-tl-[85%] sm:block">
+          <Image src="/studio-poppy.webp" alt="" fill unoptimized className="object-cover" />
         </div>
-      </main>
-    </div>
+        <p className="text-xs font-bold tracking-[.23em] uppercase">A social studio of your own</p>
+        <h1 className="mt-5 max-w-5xl text-5xl leading-[.97] font-extrabold tracking-[-.065em] sm:text-7xl lg:text-[5rem]">
+          Good ideas deserve <br className="hidden lg:block" />to be <em className="font-serif font-normal text-primary">seen.</em>
+        </h1>
+        <p className="mt-5 max-w-xl text-lg text-muted-foreground">Plan, write and publish. Your accounts, your AI, your space.</p>
+        <Link href="/dashboard/calendar" className={buttonVariants({ size: "lg", className: "mt-7" })}>
+          Start your studio <ArrowRight />
+        </Link>
+        <Card role="region" aria-label="Example studio calendar" className="gap-0 py-0  relative mt-12 grid overflow-hidden rounded-2xl border bg-card shadow-xl sm:mt-16 sm:grid-cols-[10rem_minmax(0,1fr)]">
+          <aside className="hidden border-r bg-sidebar p-4 sm:block">
+            <Brand />
+            <ul className="mt-5 grid gap-3 text-sm">
+              {([[CalendarDays, "Calendar"], [FileText, "Drafts"], [ImageIcon, "Media"], [Layers, "Accounts"], [Sparkles, "Assistant"]] as const).map(([Icon, label]) => {
+
+                return <li key={label} className="flex items-center gap-2"><Icon className="size-4" aria-hidden />{label}</li>;
+              })}
+            </ul>
+          </aside>
+          <div>
+            <header className="flex flex-wrap items-center justify-between gap-2 border-b p-4">
+              <h2 className="text-xl font-bold tracking-tight">Your week, in view.</h2>
+              <span className="text-xs text-muted-foreground">Example calendar</span>
+            </header>
+            <div className="grid divide-y sm:grid-cols-5 sm:divide-x sm:divide-y-0">
+              {sampleWeek.map(([day, title, status, time, photo]) => (
+                <div key={day} className="p-3 sm:min-h-40">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">{day}</p>
+                  {photo && <div className="mt-2 grid grid-cols-[3.5rem_1fr] items-center gap-2 rounded-lg border bg-background p-1.5 text-sm sm:grid-cols-1 sm:items-stretch">
+                    <Image src={`/studio-${photo}.webp`} width={400} height={460} alt="" unoptimized
+                      className="aspect-square w-full rounded-md object-cover sm:aspect-[4/4.6]" />
+                    <div className="grid gap-1 px-1 pb-1">
+                      <strong className="leading-tight">{title}</strong>
+                    <span className={status === "Scheduled" ? "text-xs text-primary" : "text-xs text-muted-foreground"}>{status} · {time}</span>
+                    </div>
+                  </div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </section>
+      <footer className="flex items-center justify-between gap-4 border-t py-6">
+        <Brand />
+        <p className="font-serif italic">Your voice. On your terms.</p>
+      </footer>
+    </main>
   );
 }

@@ -12,9 +12,15 @@
 
 # testing
 /coverage
+/output/
+/.playwright-cli/
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
+/.next-*/
+/.backups/
 /out/
 
 # production
@@ -22,7 +28,27 @@
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.pem
+*.key
+*.log
+
+# Local editor, research, and design artifacts
+/.idea/
+/.vscode/
+/.scratch/
+/designs/
+/docs/audits/
+
+# Private database exports and local state (SQL migrations remain tracked)
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+/backup*.sql
+/dump*.sql
 
 # debug
 npm-debug.log*
@@ -32,6 +58,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +66,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cloudflare
+.open-next/
+.wrangler/
+.dev.vars
+.dev.vars.*

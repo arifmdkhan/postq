@@ -1,3 +1,10 @@
 allowBuilds:
+  esbuild: true
   sharp: false
   unrs-resolver: false
+  workerd: true
+overrides:
+  # Both consumers use the retained glob/globSync APIs; build and regression checks cover this patch-line replacement.
+  '@opennextjs/cloudflare>glob': 14.0.2
+  '@node-minify/core>glob': 14.0.2
+  '@typescript-eslint/typescript-estree>minimatch': 11.0.1

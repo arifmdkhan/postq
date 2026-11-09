@@ -1,0 +1,39 @@
+# Media publishing rules checked on 6 November 2026
+
+This is an API/integration snapshot, not a promise that every feature of each consumer app exists in its publishing API. Current Composio tool schemas were fetched through authenticated **read-only metadata requests**, including the pinned November tool versions. No social posts or comments were created during this research.
+
+## Implemented PostQ limits
+
+| Channel / placement | Allowed selection in PostQ | Count and combinations |
+| --- | --- | --- |
+| Threads | JPEG, PNG, H.264 MP4 | Up to 20; mixed image/video carousels supported. |
+| Instagram feed | JPEG, H.264 MP4 | Up to 10; mixed carousels supported. A standalone MP4 is a Reel. |
+| Instagram Story | JPEG or H.264 MP4 | Exactly one per delivery. Multiple selected files are rejected, not split into unapproved separate Stories. |
+| Facebook Page | JPEG, PNG, H.264 MP4 | Up to 10 photos **as a PostQ cap**, or one video; no photo/video mixing. Text/link posts remain supported. |
+| LinkedIn member | JPEG, PNG, H.264 MP4 | Up to 20 images, or one video; no mixing. Text/link posts remain supported separately from media. |
+| Pinterest | JPEG, PNG, H.264 MP4 | Up to 5 images, or one registered/processed video; no mixing. Board and optional section remain required/validated. |
+| TikTok Direct Post | JPEG, H.264 MP4 | Up to 35 photos, or one video; no mixing. The first photo is the cover. |
+| YouTube | H.264 MP4 | Exactly one video per delivery; Community photo posts are not offered by PostQ. |
+| X | Connection only | PostQ does not offer publishing for this channel. |
+
+Library uploads and the shared composer selection accept up to 35 files in a batch. The library can also store GIF, WebP and WebM, but those do not silently become supported publishing formats. TikTok's native photo API also accepts WebP; PostQ currently publishes validated JPEG photos. LinkedIn's image API also supports GIF; PostQ publishes validated JPEG/PNG. These are deliberate supported subsets, not claims that the providers reject every other format.
+
+Existing PostQ limits remain: 10 MiB per file, up to 6 megapixels, H.264 MP4 with optional AAC. Meta publishing images are additionally capped at 8,000,000 bytes. Instagram carousels use the integration's 4:5–1.91:1 aspect subset and 3–60 second videos. TikTok photos must fit 1080×1920 in either orientation in PostQ; video dimensions/FPS and creator-specific duration are checked separately. LinkedIn videos require 3 seconds–30 minutes and at least 75 kB. Pinterest video duration is conservatively bounded to 4 seconds–5 minutes in PostQ; advertising product limits are not presented as a verified organic API maximum.
+
+## Evidence and important distinctions
+
+- **Threads:** The current `THREADS_CREATE_POST` input schema defines `carousel_items` with 2–20 ordered IMAGE/VIDEO children. The [Composio Threads catalogue](https://docs.composio.dev/toolkits/threads) identifies version `20261026_00`; [Meta's Postman collection](https://www.postman.com/meta/threads/documentation/dht3nzz/threads-api) documents child-container creation. Meta's main developer pages returned HTTP 429 during this check.
+- **Instagram:** The checked `INSTAGRAM_POST_IG_USER_MEDIA` schema limits parent `children` to 2–10, exposes `is_carousel_item`, and supports Stories/Reels. [Composio's current Instagram catalogue](https://docs.composio.dev/toolkits/instagram) and [Meta's maintained publishing sample](https://github.com/fbsamples/reels_publishing_apis/blob/main/insta_reels_publishing_api_sample/README.md) support the carousel distinction. Do not substitute the consumer app's carousel limit. Mixed order is preserved through individual child containers, processing checks, then one parent publication.
+- **Facebook:** The checked `FACEBOOK_CREATE_MULTI_PHOTO_POST` takes ordered `photo_urls` and returns one `post_id` plus uploaded-photo IDs. Its schema does not state a maximum count; **10 is PostQ's bounded limit**, not a verified Facebook platform maximum. The [current catalogue](https://docs.composio.dev/toolkits/facebook) identifies the dedicated multi-photo action. Videos use a separate action.
+- **LinkedIn:** The [MultiImage API](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/multiimage-post-api?view=li-lms-2026-10) specifies 2–20 images; the current Composio create-post action accepts 1–20 staged image files. [Images](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/images-api?view=li-lms-2026-10) and [Videos](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api?view=li-lms-2026-10) have separate upload/processing flows. The latter documents 3 seconds–30 minutes and a 75 kB minimum. [Composio's catalogue](https://docs.composio.dev/toolkits/linkedin) exposes upload-video and create-video-post actions. The author is verified before publishing.
+- **Pinterest:** Pinterest's [first-party OpenAPI specification](https://github.com/pinterest/api-description/blob/main/v5/openapi.yaml) defines `multiple_image_urls` with 2–5 ordered items and a distinct `video_id` source. The checked create-pin schema matches those limits. Video registration, provider-issued multipart upload and successful processing precede pin creation. The [Composio catalogue](https://docs.composio.dev/toolkits/pinterest) exposes these operations. Access level and provider permissions still determine whether an account may create Pins.
+- **TikTok:** The [photo API](https://developers.tiktok.com/docs/en/content-posting-api-reference-photo-post), updated 27 October 2026, supports 1–35 photo URLs, a cover index, 90-character photo title and 4,000-character description. The [transfer guide](https://developers.tiktok.com/docs/en/content-posting-api-media-transfer-guide) specifies JPEG/WebP photos, maximum 1080p, and verified URL ownership. Direct Post eligibility, current creator privacy/comment settings, commercial disclosures and music consent remain enforced. Photo AI disclosure is sent to the native endpoint; it is not discarded because a convenience tool omits that field.
+- **YouTube:** [`videos.insert`](https://developers.google.com/youtube/data/reference/rest/v3/videos/insert) uploads one video. Multiple attachments are rejected rather than uploading only the first.
+
+## Data, approval and operational behavior
+
+Ordered arrays survive shared/per-channel selections, draft saves/reopening/duplication, scheduled editing, MCP review and the publishing queue. Old single-media drafts and publications remain readable; migration `0021_multi_media.sql` backfills existing cover IDs. The legacy `media_id` remains the first-item cover, while `media_ids` stores the complete ordered delivery.
+
+Upload requests remain one file each with progress and retained failed files for retry; this avoids sending a 350 MiB multipart request to a Worker. Successful files are not uploaded again when retrying failures. Incompatible counts, formats, placements and mixed collections are rejected, never truncated. Each signed delivery URL binds both publication and exact asset; the serving route also checks membership/ownership. Non-cover files remain protected from deletion while referenced by active deliveries or saved drafts. The final queue insert validates every attachment atomically to prevent races and partial multi-channel queues.
+
+Provider operations have bounded preparation/processing deadlines. Processing or ambiguous final-publish failures retain the existing review/no-automatic-replay behavior. Local mocks and browser checks cannot establish real OAuth scopes, hosted signed URL reachability, provider processing acceptance or TikTok deployment eligibility. Those require approved staging accounts; no live-provider qualification is claimed here.

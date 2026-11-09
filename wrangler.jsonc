@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "postq",
+  "main": "worker.mjs",
+  "keep_vars": true,
+  "observability": { "enabled": true },
+  "triggers": { "crons": ["* * * * *"] },
+  "compatibility_date": "2026-11-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "postq-media" }],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "postq", "database_id": "00000000-0000-0000-0000-000000000000" }
+  ]
+}

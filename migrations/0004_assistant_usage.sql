@@ -1,0 +1,5 @@
+CREATE TABLE assistant_usage (
+  user_id TEXT PRIMARY KEY NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  window INTEGER NOT NULL,
+  requests INTEGER NOT NULL
+);
